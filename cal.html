@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced CPU Power Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .calculator {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4fc;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced CPU Power Calculator</h1>
+    <div class="calculator">
+        <div class="form-group">
+            <label for="baseFreq">Base Clock (GHz)</label>
+            <input type="number" id="baseFreq" step="0.1" min="0.5" max="6.0" placeholder="e.g., 3.2">
+        </div>
+        
+        <div class="form-group">
+            <label for="boostFreq">Boost Clock (GHz)</label>
+            <input type="number" id="boostFreq" step="0.1" min="0.5" max="6.0" placeholder="e.g., 3.6">
+        </div>
+        
+        <div class="form-group">
+            <label for="tdp">TDP (Watts)</label>
+            <input type="number" id="tdp" min="10" max="250" placeholder="e.g., 65">
+        </div>
+        
+        <div class="form-group">
+            <label for="cpuType">CPU Type</label>
+            <select id="cpuType">
+                <option value="intel">Intel</option>
+                <option value="amd">AMD</option>
+            </select>
+        </div>
+        
+        <button id="calculateBtn">Calculate Power Consumption</button>
+        
+        <div id="result" class="result">
+            <h3>Estimated Power Consumption:</h3>
+            <p><strong>Base Power:</strong> <span id="basePower">0</span>W</p>
+            <p><strong>Boost Power:</strong> <span id="boostPower">0</span>W</p>
+            <p><strong>Peak Power (PL2/PPT):</strong> <span id="peakPower">0</span>W</p>
+            <p><strong>Recommended PSU Headroom:</strong> <span id="psuHeadroom">0</span>W</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            // Get input values
+            const baseFreq = parseFloat(document.getElementById('baseFreq').value);
+            const boostFreq = parseFloat(document.getElementById('boostFreq').value);
+            const tdp = parseFloat(document.getElementById('tdp').value);
+            const cpuType = document.getElementById('cpuType').value;
+            
+            // Validate inputs
+            if (isNaN(baseFreq) || isNaN(boostFreq) || isNaN(tdp)) {
+                alert("Please fill all fields with valid numbers!");
+                return;
+            }
+            if (boostFreq < baseFreq) {
+                alert("Boost clock must be higher than base clock!");
+                return;
+            }
+            
+            // Power calculation formula
+            const calculatePower = (freq, tdp, architectureFactor) => {
+                // Power scales roughly with frequency^3 (cube law)
+                return tdp * Math.pow(freq / baseFreq, 3) * architectureFactor;
+            };
+            
+            // Architecture-specific factors
+            const intelFactor = 1.15;
+            const amdFactor = 1.05;
+            
+            // Calculate powers
+            const basePower = Math.round(tdp * 0.9); // Most CPUs run slightly under TDP at base
+            
+            const boostPower = Math.round(
+                cpuType === 'intel' 
+                    ? calculatePower(boostFreq, tdp, intelFactor)
+                    : calculatePower(boostFreq, tdp, amdFactor)
+            );
+            
+            // Peak power (Intel PL2/AMD PPT)
+            const peakPower = Math.round(
+                cpuType === 'intel' 
+                    ? tdp * 1.35  // Intel PL2 is typically 35% above TDP
+                    : tdp * 1.25   // AMD PPT is typically 25% above TDP
+            );
+            
+            // PSU recommendation (peak + 30% headroom)
+            const psuHeadroom = Math.round(peakPower * 1.3);
+            
+            // Display results
+            document.getElementById('basePower').textContent = basePower;
+            document.getElementById('boostPower').textContent = boostPower;
+            document.getElementById('peakPower').textContent = peakPower;
+            document.getElementById('psuHeadroom').textContent = psuHeadroom;
+            document.getElementById('result').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

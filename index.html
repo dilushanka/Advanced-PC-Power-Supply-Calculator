@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Advanced computer power supply calculator to determine the optimal UPS and PSU requirements for your PC build">
+    <title>PC Power Supply & UPS Calculator | Accurate Wattage Estimation</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Advanced PC Power Supply Calculator</h1>
+            <p class="description">Calculate the optimal power supply wattage and UPS requirements for your computer configuration</p>
+        </header>
+        
+        <div class="calculator-container">
+            <div class="calculator-form">
+                <div class="form-group">
+                    <label for="expertise">Expertise Level</label>
+                    <select id="expertise">
+                        <option value="basic">Basic</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motherboard">Motherboard</label>
+                    <select id="motherboard">
+                        <option value="desktop">Desktop</option>
+                        <option value="server">Server</option>
+                        <option value="mini_itx">Mini-ITX</option>
+                        <option value="micro_atx">Micro-ATX</option>
+                        <option value="atx">ATX</option>
+                        <option value="e_atx">E-ATX</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>CPU Configuration</label>
+                    <div id="cpu-container">
+                        <div class="component-row">
+                            <select class="cpu-select">
+                                <option value="">Select CPU</option>
+                                <option value="i9-13900k">Intel Core i9-13900K</option>
+                                <option value="i7-13700k">Intel Core i7-13700K</option>
+                                <option value="i5-13600k">Intel Core i5-13600K</option>
+                                <option value="ryzen9-7950x">AMD Ryzen 9 7950X</option>
+                                <option value="ryzen7-7700x">AMD Ryzen 7 7700X</option>
+                                <option value="ryzen5-7600x">AMD Ryzen 5 7600X</option>
+                                <option value="custom">Custom CPU</option>
+                            </select>
+                            <input type="number" class="cpu-count" value="1" min="1" max="4">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('cpu')">+ Add CPU</button>
+                    
+                    <div id="custom-cpu-specs" style="display: none; margin-top: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label for="cpu-speed">CPU Speed (MHz)</label>
+                                <input type="number" id="cpu-speed" value="3000">
+                            </div>
+                            <div>
+                                <label for="cpu-vcore">CPU Vcore (V)</label>
+                                <input type="number" id="cpu-vcore" step="0.01" value="1.2">
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <label for="cpu-utilization">CPU Utilization</label>
+                            <select id="cpu-utilization">
+                                <option value="50">50% TDP</option>
+                                <option value="65">65% TDP</option>
+                                <option value="80">80% TDP</option>
+                                <option value="90" selected>90% TDP (recommended)</option>
+                                <option value="100">100% TDP (max load)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Memory (RAM)</label>
+                    <div id="memory-container">
+                        <div class="component-row">
+                            <select class="memory-select">
+                                <option value="">Select Memory Type</option>
+                                <option value="ddr4_8gb">DDR4 8GB</option>
+                                <option value="ddr4_16gb">DDR4 16GB</option>
+                                <option value="ddr5_8gb">DDR5 8GB</option>
+                                <option value="ddr5_16gb">DDR5 16GB</option>
+                                <option value="ddr5_32gb">DDR5 32GB</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                            <input type="number" class="memory-count" value="0" min="0">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('memory')">+ Add Memory</button>
+                    
+                    <div style="margin-top: 10px;">
+                        <label>
+                            <input type="checkbox" id="fb-dimms">
+                            FB DIMMs?
+                            <span class="tooltip">ⓘ<span class="tooltiptext">Fully Buffered DIMMs typically consume more power</span></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Video Cards - Set 1</label>
+                    <div id="gpu1-container">
+                        <div class="component-row">
+                            <select class="gpu-brand">
+                                <option value="">Select Brand</option>
+                                <option value="nvidia">NVIDIA</option>
+                                <option value="amd">AMD</option>
+                                <option value="intel">Intel</option>
+                            </select>
+                            <select class="gpu-model" disabled>
+                                <option value="">Select Video Card</option>
+                            </select>
+                            <input type="number" class="gpu-count" value="0" min="0" max="4">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('gpu1')">+ Add GPU (SLI/CF)</button>
+                    
+                    <div id="gpu1-custom-specs" style="margin-top: 15px; display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label>Core Clock (MHz)</label>
+                                <input type="number" class="gpu-core-clock" value="1500">
+                            </div>
+                            <div>
+                                <label>Overvoltage (%)</label>
+                                <input type="number" class="gpu-overvoltage" value="0" min="0" max="50">
+                            </div>
+                            <div>
+                                <label>Memory Clock (MHz)</label>
+                                <input type="number" class="gpu-mem-clock" value="2000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Video Cards - Set 2</label>
+                    <div id="gpu2-container">
+                        <div class="component-row">
+                            <select class="gpu-brand">
+                                <option value="">Select Brand</option>
+                                <option value="nvidia">NVIDIA</option>
+                                <option value="amd">AMD</option>
+                                <option value="intel">Intel</option>
+                            </select>
+                            <select class="gpu-model" disabled>
+                                <option value="">Select Video Card</option>
+                            </select>
+                            <input type="number" class="gpu-count" value="0" min="0" max="4">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('gpu2')">+ Add GPU (SLI/CF)</button>
+                    
+                    <div id="gpu2-custom-specs" style="margin-top: 15px; display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label>Core Clock (MHz)</label>
+                                <input type="number" class="gpu-core-clock" value="1500">
+                            </div>
+                            <div>
+                                <label>Overvoltage (%)</label>
+                                <input type="number" class="gpu-overvoltage" value="0" min="0" max="50">
+                            </div>
+                            <div>
+                                <label>Memory Clock (MHz)</label>
+                                <input type="number" class="gpu-mem-clock" value="2000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Storage Devices</label>
+                    <div id="storage-container">
+                        <div class="component-row">
+                            <select class="storage-select">
+                                <option value="">Select Storage Type</option>
+                                <option value="hdd_35_7200">3.5" HDD 7200 RPM</option>
+                                <option value="hdd_35_5400">3.5" HDD 5400 RPM</option>
+                                <option value="hdd_25">2.5" HDD</option>
+                                <option value="ssd_25_sata">2.5" SATA SSD</option>
+                                <option value="ssd_m2_nvme">M.2 NVMe SSD</option>
+                                <option value="ssd_m2_sata">M.2 SATA SSD</option>
+                            </select>
+                            <input type="number" class="storage-count" value="0" min="0">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('storage')">+ Add Storage</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Optical Drives</label>
+                    <div id="optical-container">
+                        <div class="component-row">
+                            <select class="optical-select">
+                                <option value="">Select Optical Drive</option>
+                                <option value="dvd_rw">DVD-RW</option>
+                                <option value="bluray">Blu-Ray</option>
+                                <option value="bluray_rw">Blu-Ray RW</option>
+                            </select>
+                            <input type="number" class="optical-count" value="0" min="0">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('optical')">+ Add Optical Drive</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>PCI Express Cards</label>
+                    <div id="pcie-container">
+                        <div class="component-row">
+                            <select class="pcie-select">
+                                <option value="">Select PCIe Card</option>
+                                <option value="sound_card">Sound Card</option>
+                                <option value="network_card">Network Card</option>
+                                <option value="raid_controller">RAID Controller</option>
+                                <option value="capture_card">Capture Card</option>
+                            </select>
+                            <input type="number" class="pcie-count" value="0" min="0">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('pcie')">+ Add PCIe Card</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>PCI Cards (Legacy)</label>
+                    <div id="pci-container">
+                        <div class="component-row">
+                            <select class="pci-select">
+                                <option value="">Select PCI Card</option>
+                                <option value="legacy_sound">Sound Card</option>
+                                <option value="legacy_network">Network Card</option>
+                                <option value="legacy_video">Video Card</option>
+                            </select>
+                            <input type="number" class="pci-count" value="0" min="0">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('pci')">+ Add PCI Card</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Input Devices</label>
+                    <div class="component-row">
+                        <select class="keyboard-select">
+                            <option value="standard_keyboard">Standard Keyboard</option>
+                            <option value="gaming_keyboard">Gaming Keyboard</option>
+                            <option value="mechanical_keyboard">Mechanical Keyboard</option>
+                        </select>
+                        <input type="number" class="keyboard-count" value="1" min="0">
+                    </div>
+                    <div class="component-row" style="margin-top: 10px;">
+                        <select class="mouse-select">
+                            <option value="standard_mouse">Standard Mouse</option>
+                            <option value="gaming_mouse">Gaming Mouse</option>
+                            <option value="wireless_mouse">Wireless Mouse</option>
+                        </select>
+                        <input type="number" class="mouse-count" value="1" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Other Devices (USB, LED, Controllers, etc.)</label>
+                    <div id="other-container">
+                        <div class="component-row">
+                            <select class="other-select">
+                                <option value="">Select Device</option>
+                                <option value="usb_device">USB Device (Generic)</option>
+                                <option value="rgb_lighting">RGB Lighting</option>
+                                <option value="fan_controller">Fan Controller</option>
+                                <option value="external_hdd">External HDD</option>
+                            </select>
+                            <input type="number" class="other-count" value="0" min="0">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('other')">+ Add Device</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cooling System</label>
+                    <div id="fans-container">
+                        <div class="component-row">
+                            <select class="fan-select">
+                                <option value="">Select Fan</option>
+                                <option value="120mm">120mm Fan</option>
+                                <option value="140mm">140mm Fan</option>
+                                <option value="200mm">200mm Fan</option>
+                                <option value="cpu_cooler">CPU Cooler Fan</option>
+                            </select>
+                            <input type="number" class="fan-count" value="0" min="0">
+                            <button class="remove-btn" onclick="removeComponent(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-btn" onclick="addComponent('fans')">+ Add Fan</button>
+                    
+                    <div style="margin-top: 15px;">
+                        <label>Liquid Cooling</label>
+                        <div class="component-row">
+                            <select class="liquid-cooling-select">
+                                <option value="">Select Liquid Cooling Kit</option>
+                                <option value="aio_120mm">120mm AIO</option>
+                                <option value="aio_240mm">240mm AIO</option>
+                                <option value="aio_360mm">360mm AIO</option>
+                                <option value="custom_loop">Custom Loop</option>
+                            </select>
+                            <input type="number" class="liquid-cooling-count" value="0" min="0">
+                        </div>
+                        <div class="component-row" style="margin-top: 10px;">
+                            <select class="pump-select">
+                                <option value="">Select Pump</option>
+                                <option value="aio_pump">AIO Pump</option>
+                                <option value="d5_pump">D5 Pump</option>
+                                <option value="ddc_pump">DDC Pump</option>
+                            </select>
+                            <input type="number" class="pump-count" value="0" min="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Monitor</label>
+                    <div class="component-row">
+                        <select id="monitor-select">
+                            <option value="">Select Monitor</option>
+                            <option value="24_1080p">24" 1080p</option>
+                            <option value="27_1440p">27" 1440p</option>
+                            <option value="32_4k">32" 4K</option>
+                            <option value="ultrawide">Ultrawide 34"+</option>
+                        </select>
+                        <input type="number" id="monitor-count" value="0" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="utilization-time">Computer Utilization Time</label>
+                    <select id="utilization-time">
+                        <option value="4">4 hours per day</option>
+                        <option value="8" selected>8 hours per day</option>
+                        <option value="12">12 hours per day</option>
+                        <option value="16">16 hours per day</option>
+                        <option value="24">24/7 operation</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gaming-time">Gaming/Video Editing/3D Rendering Time</label>
+                    <select id="gaming-time">
+                        <option value="0" selected>No Gaming / 3D Apps</option>
+                        <option value="2">1-2 hours per day</option>
+                        <option value="4">3-4 hours per day</option>
+                        <option value="6">5-6 hours per day</option>
+                        <option value="8">7+ hours per day</option>
+                    </select>
+                </div>
+                
+                <button class="calculate-btn" onclick="calculatePower()">Calculate Power Requirements</button>
+            </div>
+            
+            <div class="results-container">
+                <h2 style="text-align: center; margin-bottom: 20px;">Results</h2>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Calculating power requirements...</p>
+                </div>
+                
+                <div id="results" style="display: none;">
+                    <div class="result-card">
+                        <h3>Recommended Power Supply Wattage</h3>
+                        <div class="result-value" id="psu-wattage">0W</div>
+                        <p>Minimum recommended power supply capacity</p>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Estimated System Load</h3>
+                        <div class="result-value" id="system-load">0W</div>
+                        <p>Typical power consumption under load</p>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Recommended UPS Capacity</h3>
+                        <div class="result-value" id="ups-capacity">0VA</div>
+                        <p>For 10-15 minutes of backup time</p>
+                    </div>
+                    
+                    <div class="recommendation">
+                        <h3>Recommendation</h3>
+                        <p id="recommendation-text">Based on your configuration, we recommend a high-quality power supply from reputable brands like Corsair, Seasonic, or EVGA with at least 80 Plus Gold certification.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="js/cpu.js"></script>
+    <script src="js/ram.js"></script>
+    <script src="js/gpu.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/cooling.js"></script>
+    <script src="js/peripherals.js"></script>
+    <script src="js/results.js"></script>
+    <!-- Modified main.js with Select2 integration -->
+    <script>
+        // Main Application Controller
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all component modules
+            cpuModule.init();
+            gpuModule.init();
+            
+            // Initialize searchable dropdowns
+            initSearchableDropdowns();
+            
+            // Set up calculate button
+            document.querySelector('.calculate-btn').addEventListener('click', calculatePower);
+            
+            // Set up component addition buttons
+            document.querySelectorAll('[onclick^="addComponent"]').forEach(button => {
+                const type = button.getAttribute('onclick').match(/'([^']+)'/)[1];
+                button.addEventListener('click', () => addComponent(type));
+            });
+            
+            // Set up component removal (using event delegation)
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-btn')) {
+                    removeComponent(e.target);
+                }
+            });
+        });
+
+        // Debugging: Add logs to the calculatePower function
+        function calculatePower() {
+            console.log("Starting power calculation...");
+            const resultsContainer = document.getElementById('results');
+            const loadingIndicator = document.getElementById('loading');
+            
+            // Show loading indicator
+            resultsContainer.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+
+            // Simulate calculation (replace with actual logic)
+            setTimeout(() => {
+                try {
+                    // Example calculation logic
+                    const psuWattage = 650; // Replace with actual calculation
+                    const systemLoad = 500; // Replace with actual calculation
+                    const upsCapacity = 800; // Replace with actual calculation
+                    
+                    // Update results
+                    document.getElementById('psu-wattage').textContent = `${psuWattage}W`;
+                    document.getElementById('system-load').textContent = `${systemLoad}W`;
+                    document.getElementById('ups-capacity').textContent = `${upsCapacity}VA`;
+                    
+                    // Debugging: Log calculated values
+                    console.log("Calculation complete:", { psuWattage, systemLoad, upsCapacity });
+                    
+                    // Hide loading indicator and show results
+                    loadingIndicator.style.display = 'none';
+                    resultsContainer.style.display = 'block';
+                } catch (error) {
+                    console.error("Error during calculation:", error);
+                    alert("An error occurred during calculation. Please check the console for details.");
+                    loadingIndicator.style.display = 'none';
+                }
+            }, 1000); // Simulate delay
+        }
+    </script>
+</body>
+</html>
